@@ -10,11 +10,21 @@ namespace SetBoolean
 {
     public static class Program
     {
+        private static string ToStringAsEnumerable<T>(this IEnumerable<T> seq)
+        {
+            return string.Join(", ", seq);
+        }
+
         private static void Main()
         {
-            Console.WriteLine(new Set<int>(Enumerable.Range(1, 3)).GetBoolean());
+            var a = Enumerable.Range(1, 5);
+            var b = Enumerable.Range(3, 5);
 
-            //Console.WriteLine(set.GetBoolean().ToString());
+            var aUb = a.Union(b);
+            var aCb = a.Concat(b);
+
+            Console.WriteLine(nameof(aUb) + "=> " + aUb.ToStringAsEnumerable());
+            Console.WriteLine(nameof(aCb) + "=> " + aCb.ToStringAsEnumerable());
         }
     }
 }

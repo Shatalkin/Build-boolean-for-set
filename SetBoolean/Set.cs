@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections;
-using System.ComponentModel;
 using System.Linq;
-using System.Text;
 
 namespace SetBoolean
 {
@@ -21,6 +19,11 @@ namespace SetBoolean
             Collection = set.ToList();
         }
 
+        public Set(int capacity)
+        {
+            Collection = new List<T>(capacity);
+        }
+
         internal void Add(T item)
         {
             Collection.Add(item);
@@ -36,48 +39,45 @@ namespace SetBoolean
                 {
                     if ((bitMask & 1) == 1)
                     {
-                        subSet.Collection.Add(Collection[collIdx]);
+                        subSet.Add(Collection[collIdx]);
                     }
                     bitMask >>= 1;
                 }
                 return subSet;
             }
 
-            var boolean = new Set<T>[(int)Math.Pow(2, Collection.Count)];
+            var booleanCount = (int)Math.Pow(2, Collection.Count);
+            var boolean = new Set<Set<T>>(booleanCount);
 
-            for (int bitMask = 0; bitMask < boolean.Length; ++bitMask)
+            for (int bitMask = 0; bitMask < booleanCount; ++bitMask)
             {
-                boolean[bitMask] = GetBooleanSubSet(bitMask) as Set<T>;
+                boolean.Add(GetBooleanSubSet(bitMask));
             }
             return new Set<Set<T>>(boolean);
         }
 
         internal Set<Set<T>> GetBooleanGray()
         {
-            var boolean = new Set<Set<T>>() { new Set<T>(Enumerable.Empty<T>()) };
+            var boolean = new Set<Set<T>>() { new Set<T>() };
 
-            return this.Aggregate(boolean, (b, x) => new Set<Set<T>>(b.Concat(b.Select(z => z.Concat(new Set<T>() { x }))).Select(x => new Set<T>(x))));
+            return this.Aggregate(boolean, (b, x) => new Set<Set<T>>(b.Concat(b.Select(z => new Set<T>(z.Concat(new Set<T>() { x }))))));
+        }
+
+        public T this[int idx]
+        {
+            get
+            {
+                return Collection[idx];
+            }
+            set
+            {
+                Collection[idx] = value;
+            }
         }
 
         public override string ToString()
         {
-            var s = new StringBuilder();
-            s.Append('{');
-            foreach (var item in Collection)
-            {
-                if (item is IEnumerable coll)
-                {
-                    s.Append(string.Join(",\n", coll));
-                }
-                else
-                {
-                    s.Append(string.Join(", ", Collection));
-
-                    break;
-                }
-            }
-            s.Append("}\n");
-            return s.ToString();
+            return "{" + string.Join(", ", this) + "}";
         }
 
         public IEnumerator<T> GetEnumerator()
@@ -85,7 +85,7 @@ namespace SetBoolean
             return Collection.GetEnumerator();
         }
 
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
         }
