@@ -2,31 +2,30 @@
 using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SetBoolean
 {
-    internal class Set<T> : IEnumerable<T>
+    internal class Set<T> : SortedSet<T>, IComparable<Set<T>>
+        where T : IComparable<T>
     {
-        internal List<T> Collection { get; private set; }
+        public Set(IEnumerable<T> set)
+            : base(set)
+        {
+        }
 
         public Set()
         {
-            Collection = new List<T>();
         }
 
-        public Set(IEnumerable<T> set)
+        internal Set<T> Union(Set<T> other)
         {
-            Collection = set.ToList();
-        }
-
-        public Set(int capacity)
-        {
-            Collection = new List<T>(capacity);
-        }
-
-        internal void Add(T item)
-        {
-            Collection.Add(item);
+            var newSet = new Set<T>(this);
+            foreach (var item in other)
+            {
+                newSet.Add(item);
+            }
+            return newSet;
         }
 
         internal Set<Set<T>> GetBoolean()
@@ -35,25 +34,26 @@ namespace SetBoolean
             {
                 var subSet = new Set<T>();
 
-                for (var collIdx = 0; (collIdx < Collection.Count) && (bitMask > 0); collIdx++)
+                for (var idx = this.GetEnumerator(); bitMask > 0;)
                 {
+                    idx.MoveNext();
                     if ((bitMask & 1) == 1)
                     {
-                        subSet.Add(Collection[collIdx]);
+                        subSet.Add(idx.Current);
                     }
                     bitMask >>= 1;
                 }
                 return subSet;
             }
 
-            var booleanCount = (int)Math.Pow(2, Collection.Count);
-            var boolean = new Set<Set<T>>(booleanCount);
+            int booleanCount = (int)Math.Pow(2, Count);
+            var boolean = new Set<Set<T>>();
 
-            for (int bitMask = 0; bitMask < booleanCount; ++bitMask)
+            for (var bitMask = 0; bitMask < booleanCount; ++bitMask)
             {
                 boolean.Add(GetBooleanSubSet(bitMask));
             }
-            return new Set<Set<T>>(boolean);
+            return boolean;
         }
 
         internal Set<Set<T>> GetBooleanGray()
@@ -63,31 +63,27 @@ namespace SetBoolean
             return this.Aggregate(boolean, (b, x) => new Set<Set<T>>(b.Concat(b.Select(z => new Set<T>(z.Concat(new Set<T>() { x }))))));
         }
 
-        public T this[int idx]
-        {
-            get
-            {
-                return Collection[idx];
-            }
-            set
-            {
-                Collection[idx] = value;
-            }
-        }
-
         public override string ToString()
         {
             return "{" + string.Join(", ", this) + "}";
         }
 
-        public IEnumerator<T> GetEnumerator()
+        public int CompareTo([AllowNull] Set<T> other)
         {
-            return Collection.GetEnumerator();
-        }
+            if (Count.CompareTo(other.Count) != 0)
+                return Count.CompareTo(other.Count);
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
+            var thisEnum = this.GetEnumerator();
+            var otherEnum = other.GetEnumerator();
+
+            while (true)
+            {
+                thisEnum.MoveNext();
+                otherEnum.MoveNext();
+
+                if (thisEnum.Current.CompareTo(otherEnum.Current) != 0)
+                    return thisEnum.Current.CompareTo(otherEnum.Current);
+            }
         }
     }
 }

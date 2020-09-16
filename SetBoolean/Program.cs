@@ -1,30 +1,43 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel.Design;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SetBoolean
 {
     public static class Program
     {
-        private static string ToStringAsEnumerable<T>(this IEnumerable<T> seq)
-        {
-            return string.Join(", ", seq);
-        }
-
         private static void Main()
         {
-            var a = Enumerable.Range(1, 5);
-            var b = Enumerable.Range(3, 5);
+            var set = new Set<Point>(){
+                new Point(1,1),
+                new Point(2,3),
+                new Point(0,0)
+            };
+            Console.WriteLine(set.GetBooleanGray());
+        }
 
-            var aUb = a.Union(b);
-            var aCb = a.Concat(b);
+        private class Point : IComparable<Point>
+        {
+            public Point(int x, int y)
+            {
+                this.x = x;
+                this.y = y;
+            }
 
-            Console.WriteLine(nameof(aUb) + "=> " + aUb.ToStringAsEnumerable());
-            Console.WriteLine(nameof(aCb) + "=> " + aCb.ToStringAsEnumerable());
+            private int x;
+
+            private int y;
+
+            public override string ToString()
+            {
+                return $"( {x}, {y} )";
+            }
+
+            public int CompareTo([AllowNull] Point other)
+            {
+                if (this.x != other.x)
+                    return this.x - other.x;
+                return this.y - other.y;
+            }
         }
     }
 }
