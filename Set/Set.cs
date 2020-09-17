@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections;
 using System.Linq;
 using System.Diagnostics.CodeAnalysis;
 
@@ -18,14 +17,27 @@ namespace SetBoolean
         {
         }
 
-        internal Set<T> Union(Set<T> other)
+        public int CompareTo([AllowNull] Set<T> other)
         {
-            var newSet = new Set<T>(this);
-            foreach (var item in other)
+            if (Count.CompareTo(other.Count) != 0)
+                return Count.CompareTo(other.Count);
+
+            var thisEnum = this.GetEnumerator();
+            var otherEnum = other.GetEnumerator();
+
+            while (true)
             {
-                newSet.Add(item);
+                thisEnum.MoveNext();
+                otherEnum.MoveNext();
+
+                if (thisEnum.Current.CompareTo(otherEnum.Current) != 0)
+                    return thisEnum.Current.CompareTo(otherEnum.Current);
             }
-            return newSet;
+        }
+
+        public override string ToString()
+        {
+            return "{" + string.Join(", ", this) + "}";
         }
 
         internal Set<Set<T>> GetBoolean()
@@ -63,27 +75,14 @@ namespace SetBoolean
             return this.Aggregate(boolean, (b, x) => new Set<Set<T>>(b.Concat(b.Select(z => new Set<T>(z.Concat(new Set<T>() { x }))))));
         }
 
-        public override string ToString()
+        internal Set<T> Union(Set<T> other)
         {
-            return "{" + string.Join(", ", this) + "}";
-        }
-
-        public int CompareTo([AllowNull] Set<T> other)
-        {
-            if (Count.CompareTo(other.Count) != 0)
-                return Count.CompareTo(other.Count);
-
-            var thisEnum = this.GetEnumerator();
-            var otherEnum = other.GetEnumerator();
-
-            while (true)
+            var newSet = new Set<T>(this);
+            foreach (var item in other)
             {
-                thisEnum.MoveNext();
-                otherEnum.MoveNext();
-
-                if (thisEnum.Current.CompareTo(otherEnum.Current) != 0)
-                    return thisEnum.Current.CompareTo(otherEnum.Current);
+                newSet.Add(item);
             }
+            return newSet;
         }
     }
 }
