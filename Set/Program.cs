@@ -1,18 +1,19 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace SetBoolean
+namespace Set
 {
     public static class Program
     {
+        private static string IEnumerableToString<T>(this IEquatable<T> collection)
+        {
+            return string.Join(',', collection);
+        }
+
         private static void Main()
         {
-            var set = new Set<Point>(){
-                new Point(1,1),
-                new Point(2,3),
-                new Point(0,0)
-            };
-            Console.WriteLine(set.GetBooleanGray());
+            var set = new Set<int> { 1, 2, 3 };
+            Console.WriteLine(set.GetFullPartition());
         }
 
         private class Point : IComparable<Point>
