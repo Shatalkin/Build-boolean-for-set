@@ -14,7 +14,7 @@ namespace Set
         private static void Main()
         {
             var set = new Set<int> { 1, 2, 3 };
-            Console.WriteLine(set.GetFullPartition());
+            Console.WriteLine(set.GetAllPartitions());
         }
     }
 }

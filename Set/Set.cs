@@ -19,6 +19,15 @@ namespace Set
 
         internal Set<Set<T>> GetBoolean()
         {
+            int booleanCount = (int)Math.Pow(2, Count);
+            var boolean = new Set<Set<T>>();
+            int bitMask;
+            for (bitMask = 0; bitMask < booleanCount; ++bitMask)
+            {
+                boolean.Add(GetBooleanSubSet(bitMask));
+            }
+            return boolean;
+
             Set<T> GetBooleanSubSet(int bitMask)
             {
                 var subSet = new Set<T>();
@@ -34,15 +43,6 @@ namespace Set
                 }
                 return subSet;
             }
-
-            int booleanCount = (int)Math.Pow(2, Count);
-            var boolean = new Set<Set<T>>();
-
-            for (var bitMask = 0; bitMask < booleanCount; ++bitMask)
-            {
-                boolean.Add(GetBooleanSubSet(bitMask));
-            }
-            return boolean;
         }
 
         internal Set<Set<T>> GetBooleanLib()
@@ -107,20 +107,21 @@ namespace Set
             return result;
         }
 
-        internal Set<Set<Set<T>>> GetFullPartition()
+        internal Set<Set<Set<T>>> GetAllPartitions()
         {
             var firstPartition = new Set<Set<T>>() { this };
             var result = new Set<Set<Set<T>>>() { firstPartition };
-            GetPartitition(result, firstPartition);
+            MakeAllPartititionsOfCurrentSet(result, firstPartition);
             return result;
 
-            void GetPartitition(Set<Set<Set<T>>> result, Set<Set<T>> currentSet)
+            static void MakeAllPartititionsOfCurrentSet(Set<Set<Set<T>>> result, Set<Set<T>> currentSet)
             {
                 foreach (var set in currentSet)
                 {
                     if (set.Count > 1)
                     {
                         var workSet = new Set<T>(set);
+
                         var rest = new Set<Set<T>>(currentSet);
                         rest.Remove(set);
 
@@ -130,31 +131,14 @@ namespace Set
                         var bitMask = new BitMask(workSet.Count);
                         while (bitMask.SetToNextCombination())
                         {
-                            var smallSet = new Set<Set<T>>(rest);
-
-                            var setEnum = workSet.GetEnumerator();
-                            var bitMaskEnum = bitMask.GetEnumerator();
-
-                            var rightSet = new Set<T>();
-                            var leftSet = new Set<T>();
-
-                            while (bitMaskEnum.MoveNext() && setEnum.MoveNext())
-                            {
-                                if (bitMaskEnum.Current)
-                                {
-                                    leftSet.Add(setEnum.Current);
-                                }
-                                else
-                                {
-                                    rightSet.Add(setEnum.Current);
-                                }
-                            }
+                            MakeSmallPartition(workSet, bitMask, out Set<T> leftSet, out Set<T> rightSet);
 
                             if ((leftSet.Count == 0) || (rightSet.Count == 0))
                             {
                                 continue;
                             }
 
+                            var smallSet = new Set<Set<T>>(rest);
                             smallSet.Add(leftSet);
                             smallSet.Add(rightSet);
 
@@ -165,7 +149,27 @@ namespace Set
 
                             result.Add(smallSet);
 
-                            GetPartitition(result, smallSet);
+                            MakeAllPartititionsOfCurrentSet(result, smallSet);
+                        }
+                    }
+                }
+
+                static void MakeSmallPartition(Set<T> workSet, BitMask bitMask, out Set<T> leftSet, out Set<T> rightSet)
+                {
+                    var setEnum = workSet.GetEnumerator();
+                    var bitMaskEnum = bitMask.GetEnumerator();
+
+                    rightSet = new Set<T>();
+                    leftSet = new Set<T>();
+                    while (bitMaskEnum.MoveNext() && setEnum.MoveNext())
+                    {
+                        if (bitMaskEnum.Current)
+                        {
+                            leftSet.Add(setEnum.Current);
+                        }
+                        else
+                        {
+                            rightSet.Add(setEnum.Current);
                         }
                     }
                 }
