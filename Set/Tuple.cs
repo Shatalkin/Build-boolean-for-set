@@ -36,14 +36,12 @@ namespace Set
             var thisEnum = this.GetEnumerator();
             var otherEnum = other.GetEnumerator();
 
-            while (true)
+            while (thisEnum.MoveNext() && otherEnum.MoveNext())
             {
-                thisEnum.MoveNext();
-                otherEnum.MoveNext();
-
                 if (thisEnum.Current.CompareTo(otherEnum.Current) != 0)
                     return thisEnum.Current.CompareTo(otherEnum.Current);
             }
+            return 0;
         }
 
         public override string ToString()

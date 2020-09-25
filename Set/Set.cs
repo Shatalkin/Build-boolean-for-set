@@ -23,12 +23,12 @@ namespace Set
             {
                 var subSet = new Set<T>();
 
-                for (var idx = this.GetEnumerator(); bitMask > 0;)
+                for (var it = this.GetEnumerator(); bitMask > 0;)
                 {
-                    idx.MoveNext();
+                    it.MoveNext();
                     if ((bitMask & 1) == 1)
                     {
-                        subSet.Add(idx.Current);
+                        subSet.Add(it.Current);
                     }
                     bitMask >>= 1;
                 }
@@ -120,37 +120,53 @@ namespace Set
                 {
                     if (set.Count > 1)
                     {
-                        var current = new Set<T>(set);
-                        var bitMask = new BitMask(current.Count);
+                        var workSet = new Set<T>(set);
+                        var rest = new Set<Set<T>>(currentSet);
+                        rest.Remove(set);
 
-                        var currentEnum = current.GetEnumerator();
-                        var bitMaskEnum = bitMask.GetEnumerator();
+                        if (workSet.Count < 2)
+                            return;
 
-                        var newSet = new Set<Set<T>>();
-
-                        var rightSet = new Set<T>();
-                        var leftSet = new Set<T>();
-
-                        while (bitMaskEnum.MoveNext() && currentEnum.MoveNext())
+                        var bitMask = new BitMask(workSet.Count);
+                        while (bitMask.NextBit())
                         {
-                            if (bitMaskEnum.Current)
+                            var smallSet = new Set<Set<T>>(rest);
+
+                            var setEnum = workSet.GetEnumerator();
+                            var bitMaskEnum = bitMask.GetEnumerator();
+
+                            var rightSet = new Set<T>();
+                            var leftSet = new Set<T>();
+
+                            while (bitMaskEnum.MoveNext() && setEnum.MoveNext())
                             {
-                                leftSet.Add(currentEnum.Current);
+                                if (bitMaskEnum.Current)
+                                {
+                                    leftSet.Add(setEnum.Current);
+                                }
+                                else
+                                {
+                                    rightSet.Add(setEnum.Current);
+                                }
                             }
-                            else
+
+                            if ((leftSet.Count == 0) || (rightSet.Count == 0))
                             {
-                                rightSet.Add(currentEnum.Current);
+                                continue;
                             }
+
+                            smallSet.Add(leftSet);
+                            smallSet.Add(rightSet);
+
+                            if (result.Contains(smallSet))
+                            {
+                                continue;
+                            }
+
+                            result.Add(smallSet);
+
+                            GetPartitition(result, smallSet);
                         }
-
-                        newSet.Add(rightSet);
-                        newSet.Add(leftSet);
-
-                        result.Add(newSet);
-
-                        GetPartitition(result, newSet);
-
-                        bitMask.NextBit();
                     }
                 }
             }
@@ -164,14 +180,12 @@ namespace Set
             var thisEnum = this.GetEnumerator();
             var otherEnum = other.GetEnumerator();
 
-            while (true)
+            while (thisEnum.MoveNext() && otherEnum.MoveNext())
             {
-                thisEnum.MoveNext();
-                otherEnum.MoveNext();
-
                 if (thisEnum.Current.CompareTo(otherEnum.Current) != 0)
                     return thisEnum.Current.CompareTo(otherEnum.Current);
             }
+            return 0;
         }
 
         public override string ToString()

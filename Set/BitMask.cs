@@ -1,35 +1,54 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Set
 {
-    internal class BitMask : List<bool>
+    internal class BitMask : IEnumerable<bool>
     {
-        internal bool NextBit()
-        {
-            bool transfer = this[0];
-
-            this[0] ^= true;
-
-            for (var i = 1; transfer; ++i)
-            {
-                if (i == this.Count)
-                    return false;
-
-                transfer = this[i];
-                this[i] ^= true;
-            }
-            return true;
-        }
+        private bool[] Mask { get; set; }
 
         public BitMask(int count)
         {
-            while (count > 0)
+            Mask = new bool[count];
+        }
+
+        internal bool NextBit()
+        {
+            bool transfer = Mask[0];
+
+            Mask[0] ^= true;
+
+            int i;
+            for (i = 1; transfer && (i < Mask.Length); ++i)
             {
-                this.Add(false);
-                --count;
+                transfer = Mask[i];
+                Mask[i] ^= true;
             }
+
+            if (Mask.Any(x => x == true))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public IEnumerator<bool> GetEnumerator()
+        {
+            foreach (var item in Mask)
+            {
+                yield return item;
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return Mask.GetEnumerator();
         }
     }
 }
