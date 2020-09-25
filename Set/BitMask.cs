@@ -15,7 +15,7 @@ namespace Set
             Mask = new bool[count];
         }
 
-        internal bool NextBit()
+        internal bool SetToNextCombination()
         {
             bool transfer = Mask[0];
 

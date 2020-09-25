@@ -128,7 +128,7 @@ namespace Set
                             return;
 
                         var bitMask = new BitMask(workSet.Count);
-                        while (bitMask.NextBit())
+                        while (bitMask.SetToNextCombination())
                         {
                             var smallSet = new Set<Set<T>>(rest);
 
