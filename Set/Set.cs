@@ -24,11 +24,11 @@ namespace Set
             int bitMask;
             for (bitMask = 0; bitMask < booleanCount; ++bitMask)
             {
-                boolean.Add(GetBooleanSubSet(bitMask));
+                boolean.Add(GetBooleanSubSet());
             }
             return boolean;
 
-            Set<T> GetBooleanSubSet(int bitMask)
+            Set<T> GetBooleanSubSet()
             {
                 var subSet = new Set<T>();
 
@@ -111,10 +111,10 @@ namespace Set
         {
             var firstPartition = new Set<Set<T>>() { this };
             var result = new Set<Set<Set<T>>>() { firstPartition };
-            MakeAllPartititionsOfCurrentSet(result, firstPartition);
+            MakeAllPartititionsOfCurrentSet(firstPartition);
             return result;
 
-            static void MakeAllPartititionsOfCurrentSet(Set<Set<Set<T>>> result, Set<Set<T>> currentSet)
+            void MakeAllPartititionsOfCurrentSet(Set<Set<T>> currentSet)
             {
                 foreach (var set in currentSet)
                 {
@@ -149,11 +149,10 @@ namespace Set
 
                             result.Add(smallSet);
 
-                            MakeAllPartititionsOfCurrentSet(result, smallSet);
+                            MakeAllPartititionsOfCurrentSet(smallSet);
                         }
                     }
                 }
-
                 static void MakeSmallPartition(Set<T> workSet, BitMask bitMask, out Set<T> leftSet, out Set<T> rightSet)
                 {
                     var setEnum = workSet.GetEnumerator();
